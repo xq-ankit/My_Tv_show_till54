@@ -1,43 +1,61 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import SearchBar from "../Components/SearchBar";
 import ShowCard from "../Components/ShowCard";
-import { searchShows } from "../api";
+// import { searchShows } from "../api";
 import { Show } from "../models/Show";
-import { showLoadedAction } from "../actions/shows";
-import { connect } from "react-redux";
+import {
+  // showLoadedAction,
+  ShowsQueryChangeAction,
+} from "../actions/shows";
+import { connect, ConnectedProps, ConnectProps } from "react-redux";
+import { State } from "../store";
+import { showsQuerySelector, showsSelector } from "../selectors/Shows";
 
-type ShowListPageProp = {
-  showsLoaded: (shows: Show[]) => void;
-};
+type ShowListPageProps = ReduxProps
+// {
+//   shows: Show[];
+//   query: string;
+//   showsLoaded: (shows: Show[], query: string) => void;
+//   showsQueryChange: (query: string) => void;
+// };
 
-const ShowListPage: FC<ShowListPageProp> = ({ showsLoaded }) => {
-  const [shows, setShows] = useState<Show[]>([]);
-  const [query, setQuery] = useState("");
-
-  useEffect(() => {
-    if (query) {
-      searchShows(query).then(fetchedShows => {
-        setShows(fetchedShows);
-        showsLoaded(fetchedShows); // Dispatch the action here
-      });
-    } else {
-      setShows([]);
-      showsLoaded([]); // Optionally dispatch an empty array when no query
-    }
-  }, [query, showsLoaded]);
-
+const ShowListPage: FC<ShowListPageProps> = ({
+  shows,
+  query,
+  // showsLoaded,
+  showsQueryChange,
+}) => {
+  // useEffect(() => {
+  //   searchShows(query).then((shows) => showsLoaded(shows, query));
+  // }, [query, showsLoaded]);
   return (
     <div className="mt-2">
-      <SearchBar value={query} onChange={(event) => setQuery(event.target.value)} />
-      <div className="flex flex-wrap justify-center">
-        {shows.map((s) => <ShowCard key={s.id} show={s} />)}
-      </div>
+      <SearchBar
+        value={query}
+        onChange={(event) => {
+          showsQueryChange(event.target.value);
+        }}
+      />
+      {shows && ( <div className="flex flex-wrap justify-center">
+        {shows.map((s) => (
+          <ShowCard key={s.id} show={s} />
+        ))}
+      </div>)}
     </div>
   );
 };
 
-const mapDispatchToProps = {
-  showsLoaded: showLoadedAction,
+const mapStateToProps = (state: State) => {
+  return {
+    query: showsQuerySelector(state),
+    shows: showsSelector(state),
+  };
 };
 
-export default connect(null, mapDispatchToProps)(ShowListPage);
+const mapDispatchToProps = {
+  // showsLoaded: showLoadedAction,
+  showsQueryChange: ShowsQueryChangeAction,
+};
+const connector= connect(mapStateToProps, mapDispatchToProps)
+type ReduxProps=ConnectedProps<typeof connector>;
+export default connector(ShowListPage);

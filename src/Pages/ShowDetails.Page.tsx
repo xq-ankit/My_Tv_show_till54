@@ -1,105 +1,105 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { IoReturnDownBackOutline } from "react-icons/io5";
+import { connect, ConnectedProps } from "react-redux";
+import { showsMapSelector } from "../selectors/Shows";
+import { loadShowAction } from "../actions/shows";
+import { State } from "../store";
 import CastCard from "../Components/CastCard";
 import GenrePill from "../Components/GenrePill";
 import withRouter, { WithRouterProps } from "../hocs/withRouter";
-import { Link } from "react-router-dom";
-import { IoReturnDownBackOutline } from "react-icons/io5";
 
-type ShowDetailPageProps = WithRouterProps;
+type OwnProps = WithRouterProps;
+type ShowDetailPageProps = ReduxProps & OwnProps;
 
-const ShowDetailPage: FC<WithRouterProps> = ({ params }) => {
-  console.log(params);
+interface CastMember {
+  name: string;
+  image: { medium: string };
+}
+
+const ShowDetailPage: FC<ShowDetailPageProps> = ({ params, show, loadShow }) => {
+  const [cast, setCast] = useState<CastMember[]>([]);
+
+  useEffect(() => {
+    loadShow(+params.showId);
+  }, [params.showId, loadShow]);
+
+  useEffect(() => {
+    const fetchCast = async () => {
+      try {
+        const response = await fetch(`https://api.tvmaze.com/shows/${params.showId}/cast`);
+        const data = await response.json();
+        setCast(data.map((item: any) => ({
+          name: item.person.name,
+          image: item.person.image?.medium || "https://placehold.co/200"
+        })));
+      } catch (error) {
+        console.error("Error fetching cast:", error);
+      }
+    };
+
+    if (show) {
+      fetchCast();
+    }
+  }, [show, params.showId]);
+
+  if (!show) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="mt-2">
       <Link
         to="/"
-        className="flex items-center space-x-2 px-4 py-2 w-24 bg-gray-800 text-white rounded-md shadow-md hover:bg-gray-700">
+        className="flex items-center space-x-2 px-4 py-2 w-24 bg-gray-800 text-white rounded-md shadow-md hover:bg-gray-700"
+      >
         <IoReturnDownBackOutline className="text-xl" />
         <span>Back</span>
       </Link>
-      <h2 className="text-4xl font-semibold tracking-wide">The Witcher</h2>
+      <h2 className="text-4xl font-semibold tracking-wide">{show.name}</h2>
       <div className="flex space-x-3 my-2 bg-gray-300 p-2 rounded-sm">
-        <GenrePill name="Action" />
-        <GenrePill name="Fiction" />
-        <GenrePill name="Thriller" />
-        <GenrePill name="Violence" />
+        {show.genres.map((genre) => (
+          <GenrePill name={genre} key={genre} />
+        ))}
       </div>
       <div className="mt-2 flex">
         <img
-          src="https://static.tvmaze.com/uploads/images/medium_portrait/423/1058422.jpg"
+          src={show.image?.medium || "https://placehold.co/400"}
           alt=""
           className="object-cover object-center w-full rounded-t-md h-72"
         />
         <div className="ml-2">
-          <p>
-            Based on the best-selling fantasy series, The Witcher is an epic
-            tale of fate and family. Geralt of Rivia, a solitary monster hunter,
-            struggles to find his place in a world where people often prove more
-            wicked than beasts. But when destiny hurtles him toward a powerful
-            sorceress, and a young princess with a dangerous secret, the three
-            must learn to navigate the increasingly volatile Continent together.
-          </p>
+          <p dangerouslySetInnerHTML={{ __html: show.summary || "" }} />
           <p className="mt-2 text-lg font-bold border border-gray-700 rounded-md px-2 py-1 max-w-max">
-            Rating: <span className="text-gray-700">9.5/10</span>
+            Rating: <span className="text-gray-700">{show.rating.average}/10</span>
           </p>
         </div>
       </div>
-
       <div className="mt-2">
         <h4 className="text-2xl font-semibold tracking-wide">Cast</h4>
         <div className="flex flex-wrap">
-          <CastCard
-            avatarLink="https://static.tvmaze.com/uploads/images/medium_portrait/218/545468.jpg"
-            name="Henry Cavill"
-          />
-          <CastCard
-            avatarLink="https://static.tvmaze.com/uploads/images/medium_portrait/218/545472.jpg"
-            name="Freya Allan"
-          />
-          <CastCard
-            avatarLink="https://static.tvmaze.com/uploads/images/medium_portrait/218/545470.jpg"
-            name="Anya Chalotra"
-          />
-          <CastCard
-            avatarLink="https://static.tvmaze.com/uploads/images/medium_portrait/232/581040.jpg"
-            name="Mimi Ndiweni"
-          />
-          <CastCard
-            avatarLink="https://static.tvmaze.com/uploads/images/medium_portrait/218/545468.jpg"
-            name="Henry Cavill"
-          />
-          <CastCard
-            avatarLink="https://static.tvmaze.com/uploads/images/medium_portrait/218/545472.jpg"
-            name="Freya Allan"
-          />
-          <CastCard
-            avatarLink="https://static.tvmaze.com/uploads/images/medium_portrait/218/545470.jpg"
-            name="Anya Chalotra"
-          />
-          <CastCard
-            avatarLink="https://static.tvmaze.com/uploads/images/medium_portrait/232/581040.jpg"
-            name="Mimi Ndiweni"
-          />
-          <CastCard
-            avatarLink="https://static.tvmaze.com/uploads/images/medium_portrait/218/545468.jpg"
-            name="Henry Cavill"
-          />
-          <CastCard
-            avatarLink="https://static.tvmaze.com/uploads/images/medium_portrait/218/545472.jpg"
-            name="Freya Allan"
-          />
-          <CastCard
-            avatarLink="https://static.tvmaze.com/uploads/images/medium_portrait/218/545470.jpg"
-            name="Anya Chalotra"
-          />
-          <CastCard
-            avatarLink="https://static.tvmaze.com/uploads/images/medium_portrait/232/581040.jpg"
-            name="Mimi Ndiweni"
-          />
+          {cast.map((member) => (
+            <CastCard
+              key={member.name}
+              avatarLink={member.image}
+              name={member.name}
+            />
+          ))}
         </div>
       </div>
     </div>
   );
 };
 
-export default withRouter(ShowDetailPage);
+const mapStateToProps = (state: State, ownProps: OwnProps) => ({
+  show: showsMapSelector(state)[+ownProps.params.showId],
+});
+
+const mapDispatchToProps = {
+  loadShow: loadShowAction,
+};
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+type ReduxProps = ConnectedProps<typeof connector>;
+
+export default withRouter(connector(ShowDetailPage));

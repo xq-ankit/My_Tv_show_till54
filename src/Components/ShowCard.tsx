@@ -16,7 +16,7 @@ const ShowCard: React.FC<ShowCardProps> = ({ show }) => {
       <div className="flex flex-col justify-between p-6 space-y-8">
         <div className="space-y-2">
           <h2 className="text-3xl font-semibold tracking-wide">{show.name}</h2>
-          <p>{show.summary}</p>
+          <p dangerouslySetInnerHTML={{ __html: show.summary || "" }} />
         </div>
         <Link
           to={`/show/${show.id}`}

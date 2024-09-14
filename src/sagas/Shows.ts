@@ -1,6 +1,6 @@
 import { call, put } from "redux-saga/effects";
 import { loadShowDetail, searchShows } from "../api";
-import { showLoadedAction, ShowActionLoaded, castLoadedAction } from "../actions/shows";
+import { showLoadedAction, ShowActionLoaded  } from "../actions/shows";
 import { Action } from "../actions";
 
 // handle fetching of shows based on query

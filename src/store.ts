@@ -1,19 +1,24 @@
 import { applyMiddleware, combineReducers, createStore } from "redux";
 import showReducers from "./reducers/showReducers";
+import castReducers from "./reducers/castReducers";
 import createSagaMiddleware from 'redux-saga';
 import { composeWithDevTools } from "@redux-devtools/extension";
 import { debounce, takeEvery, takeLatest } from "redux-saga/effects";
 import { LOAD_SHOW, SHOWS_QUERY_CHANGE } from "./actions/shows";
 import { fetchShowDetail, fetchShows } from "./sagas/Shows";
+import { fetchShowCast } from "./sagas/cast";
+import { LOAD_CAST } from "./actions/cast";
 
 const reducer=combineReducers({
 shows:showReducers,
+cast:castReducers,
 });
 function*rootSaga(){
     //   yield takeEvery(SHOWS_QUERY_CHANGE,fetchShows)
     //  yield takeLatest(SHOWS_QUERY_CHANGE,fetchShows)
     yield debounce(200,SHOWS_QUERY_CHANGE,fetchShows);
     yield takeEvery(LOAD_SHOW,fetchShowDetail);
+    yield takeEvery(LOAD_CAST, fetchShowCast);
 }
 
 const sagaMiddleware = createSagaMiddleware()
@@ -25,7 +30,7 @@ sagaMiddleware.run(rootSaga)
 export type State=ReturnType<typeof reducer>;
 
 export default store;
-
+// steps to solve(notes)
 //1.Make space in state for new Data
 //       -add new reducers in the store and define state
 //       -Or add keys to existing state in redducers(s).

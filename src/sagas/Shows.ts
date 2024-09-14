@@ -1,5 +1,5 @@
 import { call, put } from "redux-saga/effects";
-import { loadShowCast, loadShowDetail, searchShows } from "../api";
+import { loadShowDetail, searchShows } from "../api";
 import { showLoadedAction, ShowActionLoaded, castLoadedAction } from "../actions/shows";
 import { Action } from "../actions";
 

@@ -8,12 +8,14 @@ export type State = {
   shows: { [showId: number]: Show };
   query: string;
   query_shows:{[query:string]:number[]};
+  loading:boolean;
 };
 
 export const initialState: State = {
   shows: {},
   query: "",
   query_shows:{},
+  loading:false,
 };
 
 function showReducers(state = initialState, action: AnyAction): State {
@@ -26,13 +28,15 @@ function showReducers(state = initialState, action: AnyAction): State {
         }
         const showSchema = new schema.Entity("shows");
         const normalizedData = normalize(shows, [showSchema]);
-        draft.query_shows[draft.query]=normalizedData.result
-        draft.shows = {...draft.shows,...normalizedData.entities.shows}
+        draft.loading=false;
+        draft.query_shows[draft.query]=normalizedData.result;
+        draft.shows = {...draft.shows,...normalizedData.entities.shows};
       });
 
     case SHOWS_QUERY_CHANGE:
       return produce(state, (draft) => {
         draft.query = action.payload;
+        draft.loading=true;
       });
 
     case SHOW_DETAIL_LOADED:

@@ -9,7 +9,8 @@ import {
 } from "../actions/shows";
 import { connect, ConnectedProps, ConnectProps } from "react-redux";
 import { State } from "../store";
-import { showsQuerySelector, showsSelector } from "../selectors/Shows";
+import { showsLoadingSelector, showsQuerySelector, showsSelector } from "../selectors/Shows";
+import LoadingSpinner from "../Components/LoadingSpinner";
 
 type ShowListPageProps = ReduxProps
 // {
@@ -21,6 +22,7 @@ type ShowListPageProps = ReduxProps
 
 const ShowListPage: FC<ShowListPageProps> = ({
   shows,
+  loading,
   query,
   // showsLoaded,
   showsQueryChange,
@@ -30,12 +32,14 @@ const ShowListPage: FC<ShowListPageProps> = ({
   // }, [query, showsLoaded]);
   return (
     <div className="mt-2">
-      <SearchBar
+      <div className="flex"><SearchBar
         value={query}
         onChange={(event) => {
           showsQueryChange(event.target.value);
         }}
       />
+      {loading && <LoadingSpinner/>}
+      </div>
       {shows && ( <div className="flex flex-wrap justify-center">
         {shows.map((s) => (
           <ShowCard key={s.id} show={s} />
@@ -49,6 +53,7 @@ const mapStateToProps = (state: State) => {
   return {
     query: showsQuerySelector(state),
     shows: showsSelector(state),
+    loading:showsLoadingSelector(state)
   };
 };
 

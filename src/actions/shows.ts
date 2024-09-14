@@ -10,10 +10,6 @@ export type ShowLoadedPayload = {
   shows: Show[];
   query: string;
 };
-export type CastMember = {
-  person: { name: string; image: { medium: string } };
-  character: { name: string };
-};
 
 // Action to load shows with the query
 export const showLoadedAction: ActionCreator<ShowLoadedPayload> = (
@@ -41,11 +37,3 @@ export const loadShowAction: ActionCreator<number> = (showId: number) => ({
   type: LOAD_SHOW,
   payload: showId,
 });
-export const CAST_LOADED = "CAST_LOADED";
-
-// Action to handle cast data loading
-export const castLoadedAction: ActionCreator<CastMember[]> = (cast: CastMember[]) => ({
-  type: CAST_LOADED,
-  payload: cast,
-});
-

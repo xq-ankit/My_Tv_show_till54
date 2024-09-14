@@ -1,9 +1,11 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { IoReturnDownBackOutline } from "react-icons/io5";
 import { connect, ConnectedProps } from "react-redux";
 import { showsMapSelector } from "../selectors/Shows";
-import { loadShowAction } from "../actions/shows";
+import { castSelector } from "../selectors/Cast";
+import { loadShowAction} from "../actions/shows";
+import { loadCastAction } from "../actions/cast";
 import { State } from "../store";
 import CastCard from "../Components/CastCard";
 import GenrePill from "../Components/GenrePill";
@@ -12,36 +14,15 @@ import withRouter, { WithRouterProps } from "../hocs/withRouter";
 type OwnProps = WithRouterProps;
 type ShowDetailPageProps = ReduxProps & OwnProps;
 
-interface CastMember {
-  name: string;
-  image: { medium: string };
-}
-
-const ShowDetailPage: FC<ShowDetailPageProps> = ({ params, show, loadShow }) => {
-  const [cast, setCast] = useState<CastMember[]>([]);
-
-  useEffect(() => {
+const ShowDetailPage: FC<ShowDetailPageProps> = ({ params,
+    show,
+    cast,
+    loadShow,
+    loadCast }) => {
+    useEffect(() => {
     loadShow(+params.showId);
-  }, [params.showId, loadShow]);
-
-  useEffect(() => {
-    const fetchCast = async () => {
-      try {
-        const response = await fetch(`https://api.tvmaze.com/shows/${params.showId}/cast`);
-        const data = await response.json();
-        setCast(data.map((item: any) => ({
-          name: item.person.name,
-          image: item.person.image?.medium || "https://placehold.co/200"
-        })));
-      } catch (error) {
-        console.error("Error fetching cast:", error);
-      }
-    };
-
-    if (show) {
-      fetchCast();
-    }
-  }, [show, params.showId]);
+    loadCast(+params.showId);
+  }, [params.showId, loadShow, loadCast]);
 
   if (!show) {
     return <div>Loading...</div>;
@@ -65,7 +46,7 @@ const ShowDetailPage: FC<ShowDetailPageProps> = ({ params, show, loadShow }) => 
       <div className="mt-2 flex">
         <img
           src={show.image?.medium || "https://placehold.co/400"}
-          alt=""
+          alt="Show poster"
           className="object-cover object-center w-full rounded-t-md h-72"
         />
         <div className="ml-2">
@@ -79,11 +60,7 @@ const ShowDetailPage: FC<ShowDetailPageProps> = ({ params, show, loadShow }) => 
         <h4 className="text-2xl font-semibold tracking-wide">Cast</h4>
         <div className="flex flex-wrap">
           {cast.map((member) => (
-            <CastCard
-              key={member.name}
-              avatarLink={member.image}
-              name={member.name}
-            />
+            <CastCard key={member.name} avatarLink={member.image} name={member.name} />
           ))}
         </div>
       </div>
@@ -93,10 +70,12 @@ const ShowDetailPage: FC<ShowDetailPageProps> = ({ params, show, loadShow }) => 
 
 const mapStateToProps = (state: State, ownProps: OwnProps) => ({
   show: showsMapSelector(state)[+ownProps.params.showId],
+  cast: castSelector(state, +ownProps.params.showId),
 });
 
 const mapDispatchToProps = {
   loadShow: loadShowAction,
+  loadCast: loadCastAction,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
